@@ -1,5 +1,7 @@
 import os
-import sqlite3
+import psycopg
+from psycopg.rows import dict_row
+#import sqlite3
 from datetime import datetime, timezone
 from functools import wraps
 
@@ -12,33 +14,36 @@ DB_PATH = os.environ.get("DB_PATH", "temperature.db")
 
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return psycopg.connect(
+        os.environ["DATABASE_URL"],
+        row_factory=dict_row
+    )
 
 
 def init_db():
     conn = get_db()
-    conn.executescript("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        is_admin INTEGER NOT NULL DEFAULT 0,
-        created_at TEXT NOT NULL
-    );
 
-    CREATE TABLE IF NOT EXISTS temperature_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        temperature REAL NOT NULL,
-        recorded_at TEXT NOT NULL,
-        FOREIGN KEY(user_id) REFERENCES users(id)
-    );
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(100) UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+            created_at TIMESTAMPTZ NOT NULL
+        )
     """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS temperature_logs (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id),
+            temperature DOUBLE PRECISION NOT NULL,
+            recorded_at TIMESTAMPTZ NOT NULL
+        )
+    """)
+
     conn.commit()
     conn.close()
-
 
 def login_required(view):
     @wraps(view)
@@ -73,7 +78,7 @@ def login():
 
         conn = get_db()
         user = conn.execute(
-            "SELECT * FROM users WHERE username = ?", (username,)
+            "SELECT * FROM users WHERE username = %s", (username,)
         ).fetchone()
         conn.close()
 
@@ -116,7 +121,7 @@ def dashboard():
     my_logs = conn.execute("""
         SELECT temperature, recorded_at
         FROM temperature_logs
-        WHERE user_id = ?
+        WHERE user_id = %s
         ORDER BY recorded_at DESC
         LIMIT 10
     """, (session["user_id"],)).fetchall()
