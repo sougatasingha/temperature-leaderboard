@@ -63,6 +63,7 @@ def init_db():
                     datetime.now(timezone.utc)
                 )
             )
+            conn.commit()
     conn.commit()
     conn.close()
 
