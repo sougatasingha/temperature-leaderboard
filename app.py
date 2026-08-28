@@ -13,6 +13,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "change-this-in-production")
 DB_PATH = os.environ.get("DB_PATH", "temperature.db")
 
 
+
 def get_db():
     return psycopg.connect(
         os.environ["DATABASE_URL"],
@@ -22,7 +23,8 @@ def get_db():
 
 def init_db():
     conn = get_db()
-
+    admin_username = os.environ.get("ADMIN_USERNAME")
+    admin_password = os.environ.get("ADMIN_PASSWORD")
     conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -41,7 +43,26 @@ def init_db():
             recorded_at TIMESTAMPTZ NOT NULL
         )
     """)
+    if admin_username and admin_password:
+        existing_admin = conn.execute(
+            "SELECT id FROM users WHERE username = %s",
+            (admin_username,)
+        ).fetchone()
 
+        if not existing_admin:
+            conn.execute(
+                """
+                INSERT INTO users
+                    (username, password_hash, is_admin, created_at)
+                VALUES
+                    (%s, %s, TRUE, %s)
+                """,
+                (
+                    admin_username,
+                    generate_password_hash(admin_password),
+                    datetime.now(timezone.utc)
+                )
+            )
     conn.commit()
     conn.close()
 
@@ -152,7 +173,7 @@ def log_temperature():
 
     conn = get_db()
     conn.execute(
-        "INSERT INTO temperature_logs (user_id, temperature, recorded_at) VALUES (?, ?, ?)",
+        "INSERT INTO temperature_logs (user_id, temperature, recorded_at) VALUES (%s, %s, %s)",
         (session["user_id"], temperature, recorded_at)
     )
     conn.commit()
@@ -189,7 +210,7 @@ def add_user():
         conn = get_db()
         conn.execute(
             """INSERT INTO users (username, password_hash, is_admin, created_at)
-               VALUES (?, ?, 0, ?)""",
+               VALUES (%s, %s, 0, %s)""",
             (
                 username,
                 generate_password_hash(password),
@@ -199,9 +220,8 @@ def add_user():
         conn.commit()
         conn.close()
         flash(f"User '{username}' created.", "success")
-    except sqlite3.IntegrityError:
+    except psycopg.errors.UniqueViolation:
         flash("That username already exists.", "error")
-
     return redirect(url_for("admin"))
 
 
