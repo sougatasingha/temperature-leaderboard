@@ -29,7 +29,7 @@ Open http://127.0.0.1:5000
 The first admin user can be created with this one-time Python command:
 
 ```powershell
-python -c "from app import init_db,get_db; from werkzeug.security import generate_password_hash; from datetime import datetime,timezone; init_db(); c=get_db(); c.execute('INSERT INTO users(username,password_hash,is_admin,created_at) VALUES (?,?,1,?)',('admin',generate_password_hash('ChangeMe123!'),datetime.now(timezone.utc).isoformat())); c.commit(); c.close()"
+python -c "from app import init_db,get_db; from werkzeug.security import generate_password_hash; from datetime import datetime,timezone; init_db(); c=get_db(); c.execute('INSERT INTO users(username,password_hash,is_admin,created_at) VALUES (?,?,1,?)',('admin',generate_password_hash('Change123!'),datetime.now(timezone.utc).isoformat())); c.commit(); c.close()"
 ```
 
 Change the admin password immediately after testing.
