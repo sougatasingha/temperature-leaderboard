@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Log your temperature</h2>
+    <p>Enter your current temperature in °C.</p>
+    <form method="post" action="{{ url_for('log_temperature') }}">
+        <input name="temperature" type="number" step="0.1" min="30" max="45" placeholder="e.g. 36.7" required>
+        <button type="submit">Record Temperature</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>🏆 Leaderboard</h2>
+    <table>
+        <tr><th>Rank</th><th>User</th><th>Latest °C</th><th>Recorded</th></tr>
+        {% for row in leaderboard %}
+        <tr>
+            <td class="rank">{{ loop.index }}</td>
+            <td>{{ row.username }}</td>
+            <td><strong>{{ "%.1f"|format(row.temperature) }} °C</strong></td>
+            <td>{{ row.recorded_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No temperatures recorded yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="card">
+    <h2>My recent readings</h2>
+    <table>
+        <tr><th>Temperature</th><th>Recorded</th></tr>
+        {% for row in my_logs %}
+        <tr><td>{{ "%.1f"|format(row.temperature) }} °C</td><td>{{ row.recorded_at }}</td></tr>
+        {% else %}
+        <tr><td colspan="2">No readings yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
