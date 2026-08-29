@@ -2,9 +2,9 @@
 {% block content %}
 <div class="card">
     <h2>Log your temperature</h2>
-    <p>Enter your current temperature in °C.</p>
+    <p>Enter your current temperature in °F.</p>
     <form method="post" action="{{ url_for('log_temperature') }}">
-        <input name="temperature" type="number" step="0.1" min="30" max="45" placeholder="e.g. 36.7" required>
+        <input name="temperature" type="number" step="0.1" min="90" max="108" placeholder="e.g. 98.6" required>
         <button type="submit">Record Temperature</button>
     </form>
 </div>
