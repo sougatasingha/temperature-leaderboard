@@ -12,12 +12,12 @@
 <div class="card">
     <h2>🏆 Leaderboard</h2>
     <table>
-        <tr><th>Rank</th><th>User</th><th>Latest °C</th><th>Recorded</th></tr>
+        <tr><th>Rank</th><th>User</th><th>Latest °F</th><th>Recorded</th></tr>
         {% for row in leaderboard %}
         <tr>
             <td class="rank">{{ loop.index }}</td>
             <td>{{ row.username }}</td>
-            <td><strong>{{ "%.1f"|format(row.temperature) }} °C</strong></td>
+            <td><strong>{{ "%.1f"|format(row.temperature) }} °F</strong></td>
             <td>{{ row.recorded_at }}</td>
         </tr>
         {% else %}
