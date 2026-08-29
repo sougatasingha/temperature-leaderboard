@@ -211,7 +211,7 @@ def add_user():
         conn = get_db()
         conn.execute(
             """INSERT INTO users (username, password_hash, is_admin, created_at)
-               VALUES (%s, %s, 0, %s)""",
+               VALUES (%s, %s, FALSE, %s)""",
             (
                 username,
                 generate_password_hash(password),
