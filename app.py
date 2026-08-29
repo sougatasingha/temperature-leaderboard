@@ -166,8 +166,8 @@ def log_temperature():
         return redirect(url_for("dashboard"))
 
     # Basic validation. Adjust if your use case needs another range.
-    if temperature < 30 or temperature > 45:
-        flash("Temperature must be between 30°C and 45°C.", "error")
+    if temperature < 90 or temperature > 108:
+        flash("Temperature must be between 90°F and 108°F.", "error")
         return redirect(url_for("dashboard"))
 
     recorded_at = datetime.now(timezone.utc).isoformat()
